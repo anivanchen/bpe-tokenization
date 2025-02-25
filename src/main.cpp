@@ -57,6 +57,21 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
     word_counts.push_back(word->second);
   }
 
+  // Initialize the vocabulary with unique characters
+
+  std::unordered_map<std::string, int> vocabulary;
+
+  for (int i = 0; i < split_strings.size(); i++) {
+    for (int j = 0; j < split_strings[i].size(); j++) {
+      vocabulary[split_strings[i][j]] += word_counts[i];
+    }
+  }
+
+  // for (const auto& entry : vocabulary) {
+  //   std::cout << "Word: " << entry.first << ", Count: " << entry.second << std::endl;
+  // }
+
+
   return 0;
 }
 
