@@ -13,10 +13,12 @@ cpm-package-lock.cmake
 CPM_modules
 CPackConfig.cmake
 CPackSourceConfig.cmake
-bpetok
+bpe
 *.out
 .testfiles
 *.tokens
+/build
+/.vscode
 
 *.aux
 *.fdb_latexmk

@@ -2,12 +2,14 @@
 
 std::vector<char> rftv(char* filename) {
 
-  std::ifstream file(filename);
+  std::ifstream file(filename, std::ios::binary | std::ios::ate); // open as binary and at end of file
 
   if (!file.is_open()) throw std::runtime_error("Could not open file");
   
   std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
+
+  if (size <= 0) throw std::runtime_error("File empty or invalid size");
 
   std::vector<char> buffer(size);
 
