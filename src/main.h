@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <chrono>
+
 std::vector<char> rftv(char* filename);
 
 int generate_vocabulary(char* filename, int ITERATION_LIMIT);
