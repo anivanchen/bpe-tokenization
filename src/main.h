@@ -9,8 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-int normalize(std::vector<char>* raw_text);
-
 std::vector<char> rftv(char* filename);
 
 int generate_vocabulary(char* filename, int ITERATION_LIMIT);
