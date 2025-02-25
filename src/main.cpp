@@ -71,6 +71,35 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
   //   std::cout << "Word: " << entry.first << ", Count: " << entry.second << std::endl;
   // }
 
+  int iteration = 0;
+
+  while (iteration++ < ITERATION_LIMIT) { // maybe replace this with a target vocabulary size (32000k)
+    
+    std::unordered_map<std::string, int> bigrams;
+
+    // Find bigrams of characters in split_words and counts of bigrams
+    // Track the most frequent bigram
+
+    int max_val = 0;
+    std::string max_key = "";
+
+    for (int i = 0; i < split_strings.size(); i++) {
+      for (int j = 0; j < split_strings[i].size() - 1; j++) {
+        std::string ab = split_strings[i][j] + split_strings[i][j+1];
+        bigrams[ab] += word_counts[i];
+
+        if (bigrams[ab] > max_val) {
+          max_val = bigrams[ab];
+          max_key = ab;
+        }
+      }
+    }
+
+    if (bigrams.empty()) break;
+
+    std::cout << "Max Val: " << max_val << " , Max Key: " << max_key << std::endl;
+
+  }
 
   return 0;
 }
