@@ -37,8 +37,24 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
     word = strtok(NULL, " \t\n");
   }
 
-  for (const auto& entry : unique_words) {
-    std::cout << "Word: " << entry.first << ", Count: " << entry.second << std::endl;
+  // for (const auto& entry : unique_words) {
+  //   std::cout << "Word: " << entry.first << ", Count: " << entry.second << std::endl;
+  // }
+
+  // Split words into characters, mark ends with </w>, 
+  std::vector<std::vector<std::string>> split_strings;
+  std::vector<int> word_counts;
+
+  for (auto word = unique_words.begin(); word != unique_words.end(); word++) {
+    std::vector<std::string> characters;
+    characters.push_back("</w>");
+
+    for (int j = 0; j < word->first.length(); j++) {
+      characters.push_back(std::string(1, word->first[j]));
+    }
+
+    split_strings.push_back(characters);
+    word_counts.push_back(word->second);
   }
 
   return 0;
