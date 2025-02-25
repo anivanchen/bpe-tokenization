@@ -98,8 +98,60 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
     if (bigrams.empty()) break;
 
     std::cout << "Max Val: " << max_val << " , Max Key: " << max_key << std::endl;
+    
+    // Merge all instances of the most frequent bigram
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < split_strings.size(); i++) {
+      for (int j = 0; j < split_strings[i].size() - 1; j++) {
+        std::string ab = split_strings[i][j] + split_strings[i][j + 1];
+
+        if (ab == max_key) {
+          split_strings[i][j] = ab;
+          split_strings[i].erase(split_strings[i].begin() + j + 1);
+
+          vocabulary[std::string(1, ab.at(0))] -= word_counts[i];
+          vocabulary[std::string(1, ab.at(1))] -= word_counts[i];
+          vocabulary[ab] += word_counts[i];
+        }
+      }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "aElapsed time: " << elapsed.count() << " s\n";
+
+    // auto start = std::chrono::high_resolution_clock::now();
+
+    // for (int i = 0; i < split_strings.size(); i++) {
+    //   for (int j = 0; j < split_strings[i].size() - 1; j++) {
+    //     std::string a = split_strings[i][j];
+    //     std::string b = split_strings[i][j + 1];
+    //     std::string ab = a + b;
+
+    //     if (ab == max_key) {
+    //       split_strings[i][j] = ab;
+    //       split_strings[i].erase(split_strings[i].begin() + j + 1);
+
+    //       if (vocabulary.find(ab) == vocabulary.end()) {
+    //         vocabulary[ab] = word_counts[i];
+    //       }
+
+    //       vocabulary[a]  -= word_counts[i];
+    //       vocabulary[b]  -= word_counts[i];
+    //       vocabulary[ab] += word_counts[i];
+    //     }
+    //   }
+    // }
+
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> elapsed = end - start;
+    // std::cout << "bElapsed time: " << elapsed.count() << " s\n";
 
   }
+
+  // Write vocabulary to file for storage
 
   return 0;
 }
@@ -114,7 +166,7 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
 int main (int argc, char* argv[]) {
 
-  generate_vocabulary("../.testfiles/war-and-peace.txt", 1);
+  generate_vocabulary("../.testfiles/war-and-peace.txt", 2048);
 
   return 0;
 }
