@@ -26,20 +26,14 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
   // Read corpus file into vector
   std::vector<char> raw_text = rftv(filename);
 
-  // Build dictionary of unique words
+  // Build dictionary of unique words and count frequency
 
   std::unordered_map<std::string, int> unique_words;
 
   char* word = strtok(raw_text.data(), " \t\n");
 
   while (word) {
-    if (unique_words.find(word) != unique_words.end()) {
-      unique_words[word] += 1;
-    }
-    else {
-      unique_words[word] = 1;
-    }
-
+    unique_words[word]++;
     word = strtok(NULL, " \t\n");
   }
 
