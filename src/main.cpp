@@ -212,6 +212,27 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
     }
   }
 
+// for (const auto& subword_list : subwords) {
+  //   for (const auto& subword : subword_list) {
+  //       std::cout << subword << "_";
+  //   }
+  // }
+
+  // std::cout << std::endl;
+
+  // for (const auto& token : tokens) {
+  //   std::cout << token << " ";
+  // }
+
+  std::ofstream output_file(output_filename);
+
+  for (const auto& token : tokens) {
+    output_file << token << " ";
+  }
+
+  output_file.close();  
+
+  return 0;
 }
            
 int decode(char* input_filename, char* vocabulary_filename, char* output_filename) {
