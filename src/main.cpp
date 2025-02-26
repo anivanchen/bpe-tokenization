@@ -117,6 +117,15 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
 
   // Write vocabulary to file for storage
 
+  std::ofstream output_file("vocabulary.tokens");
+
+  int n = 0;
+  for (std::string s : ins_ord_vocab) {
+    output_file << s << " " << n++ << std::endl;
+  }
+
+  output_file.close();
+
   return 0;
 }
 
