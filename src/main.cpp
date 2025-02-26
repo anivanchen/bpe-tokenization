@@ -69,13 +69,7 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
     }
   }
 
-  // for (const auto& entry : vocabulary) {
-  //   std::cout << "Word: " << entry.first << ", Count: " << entry.second << std::endl;
-  // }
-
-  int iteration = 0;
-
-  while (iteration++ < ITERATION_LIMIT) { // maybe replace this with a target vocabulary size (32000k)
+  while (vocabulary.size() < 32000) {
     
     std::unordered_map<std::string, int> bigrams;
 
