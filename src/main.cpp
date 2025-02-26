@@ -159,6 +159,10 @@ std::vector<std::string> read_vocab(char* vocab_filename) {
   return vocab;
 }
 
+bool startsWith(const std::string str, const std::string prefix) {
+  return str.compare(0, prefix.size(), prefix) == 0;
+}
+
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   
 }
