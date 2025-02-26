@@ -184,6 +184,34 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
   std::vector<std::vector<std::string>> subwords(words.size());
   std::vector<int> tokens;
+
+  // Iterate over each word in the words vector
+  for (int i = 0; i < words.size(); i++) {
+
+    // Continue processing the word until it is empty
+    while (words[i].length() > 0) {
+      std::string max_subword;
+
+      // Find the longest subword in the vocabulary that matches the beginning of the current word
+      for (int j = 0; j < vocab.size(); j++) {
+        if (vocab[j].length() > max_subword.length()) {
+          if (startsWith(words[i], vocab[j])) max_subword = vocab[j];
+        }
+      }
+
+      if (!max_subword.empty()) {
+        // If a subword is found, add it to the subwords list and remove it from the current word
+        subwords[i].push_back(max_subword);
+        words[i] = words[i].substr(max_subword.length()); // chop off subword
+        tokens.push_back(vocab_map[max_subword]);
+      } else {
+        // If no subword is found, add the first character as a subword
+        subwords[i].push_back(std::string(1, words[i][0]));
+        words[i] = words[i].substr(1);
+      }
+    }
+  }
+
 }
            
 int decode(char* input_filename, char* vocabulary_filename, char* output_filename) {
