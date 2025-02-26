@@ -164,7 +164,26 @@ bool startsWith(const std::string str, const std::string prefix) {
 }
 
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
-  
+  std::vector<char> input_data = rftv(input_filename);
+  std::vector<std::string> vocab = read_vocab(vocabulary_filename);
+  std::unordered_map<std::string, int> vocab_map;
+
+  int n = 0;
+  for (std::string word : vocab) {
+    vocab_map[word] = n++;
+  }
+
+  std::string str(input_data.begin(), input_data.end());
+  std::vector<std::string> words;
+  std::string word;
+
+  std::istringstream stream(str);
+  while(stream >> word) {
+    words.push_back("<>" + word);
+  }
+
+  std::vector<std::vector<std::string>> subwords(words.size());
+  std::vector<int> tokens;
 }
            
 int decode(char* input_filename, char* vocabulary_filename, char* output_filename) {
