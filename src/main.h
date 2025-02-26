@@ -2,9 +2,11 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#include <cctype>
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -12,6 +14,8 @@
 #include <chrono>
 
 std::vector<char> rftv(char* filename);
+
+std::unordered_map<std::string, int> read_vocab(char* vocab_filename);
 
 int generate_vocabulary(char* filename, int ITERATION_LIMIT);
 

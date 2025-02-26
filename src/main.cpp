@@ -129,6 +129,34 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
   return 0;
 }
 
+std::unordered_map<std::string, int> read_vocab(char* vocab_filename) {
+  
+  std::unordered_map<std::string, int> vocab;
+  
+  std::ifstream file(vocab_filename);
+
+  if (!file.is_open()) throw std::runtime_error("Could not open file");
+
+  std::string line;
+
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    std::string word, token;
+
+    if (iss >> word >> token) {
+      vocab[word] = stoi(token);
+    }
+  }
+
+  file.close();
+
+  for (auto &pair : vocab) {
+    std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+  }
+
+  return vocab;
+}
+
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   
 }
