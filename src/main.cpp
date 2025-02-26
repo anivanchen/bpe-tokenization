@@ -119,6 +119,8 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
       }
     }
 
+    std::cout << "(" << iter++ << ") " << max_key << std::endl; 
+
   }
 
   // Write vocabulary to file for storage
@@ -135,9 +137,9 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
   return 0;
 }
 
-std::unordered_map<std::string, int> read_vocab(char* vocab_filename) {
+std::vector<std::string> read_vocab(char* vocab_filename) {
   
-  std::unordered_map<std::string, int> vocab;
+  std::vector<std::string> vocab;
   
   std::ifstream file(vocab_filename);
 
@@ -149,16 +151,10 @@ std::unordered_map<std::string, int> read_vocab(char* vocab_filename) {
     std::istringstream iss(line);
     std::string word, token;
 
-    if (iss >> word >> token) {
-      vocab[word] = stoi(token);
-    }
+    if (iss >> word >> token) vocab.push_back(word);
   }
 
   file.close();
-
-  for (auto &pair : vocab) {
-    std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-  }
 
   return vocab;
 }
