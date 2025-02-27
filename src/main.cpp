@@ -185,6 +185,8 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::vector<std::vector<std::string>> subwords(words.size());
   std::vector<int> tokens;
 
+  std::unordered_map<std::string, std::string> prefix_cache;
+
   // Iterate over each word in the words vector
   for (int i = 0; i < words.size(); i++) {
 
@@ -193,10 +195,20 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
       std::string max_subword;
 
       // Find the longest subword in the vocabulary that matches the beginning of the current word
+
+      // Check if the longest subword is already cached
+      if (prefix_cache.find(words[i]) != prefix_cache.end()) {
+        max_subword = prefix_cache[words[i]];
+      } else {
+        // If not cached, find the longest subword using vocab
       for (int j = 0; j < vocab.size(); j++) {
         if (vocab[j].length() > max_subword.length()) {
           if (startsWith(words[i], vocab[j])) max_subword = vocab[j];
         }
+        }
+
+        // Cache the result for future lookups
+        prefix_cache[words[i]] = max_subword;
       }
 
       if (!max_subword.empty()) {
@@ -211,18 +223,6 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
       }
     }
   }
-
-// for (const auto& subword_list : subwords) {
-  //   for (const auto& subword : subword_list) {
-  //       std::cout << subword << "_";
-  //   }
-  // }
-
-  // std::cout << std::endl;
-
-  // for (const auto& token : tokens) {
-  //   std::cout << token << " ";
-  // }
 
   std::ofstream output_file(output_filename);
 
