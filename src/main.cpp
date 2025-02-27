@@ -254,7 +254,13 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
     text += vocab[stoi(word)];
   }
 
-  std::cout << text << std::endl;
+  // Replace all occurrences of "<>" with a space
+  size_t pos = 0;
+  while ((pos = text.find("<>", pos)) != std::string::npos) {
+      text.replace(pos++, 2, " ");
+  }
+
+  // std::cout << text << std::endl;
 
   return 0;
 }
