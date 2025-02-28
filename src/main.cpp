@@ -4,6 +4,32 @@ bool is_symb(char c) {
   return !std::isalnum(c) && !std::isspace(c) && c != '<' && c != '>';
 }
 
+void reverseString(std::string &str) {
+  int start = 0;
+  int end = str.length() - 1;
+
+  while (start < end) {
+      // Swap characters at start and end
+      std::swap(str[start], str[end]);
+      start++;
+      end--;
+  }
+}
+
+std::string getTokRep(int n) {
+  std::string result;
+
+  while (n >= 94) {
+    result.push_back((n % 94) + 33);
+    n /= 94;
+  }
+
+  result.push_back(n + 33);
+  reverseString(result);
+
+  return result;
+}
+
 std::vector<char> rftv(char* filename) {
 
   std::ifstream file(filename, std::ios::binary | std::ios::ate); // open as binary and at end of file
@@ -129,7 +155,7 @@ int generate_vocabulary(char* filename) {
 
   int n = 0;
   for (std::string s : ins_ord_vocab) {
-    output_file << s << " " << n++ << std::endl;
+    output_file << s << " " << getTokRep(n++) << std::endl;
   }
 
   output_file.close();
@@ -137,9 +163,9 @@ int generate_vocabulary(char* filename) {
   return 0;
 }
 
-std::vector<std::string> read_vocab(char* vocab_filename) {
+std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
   
-  std::vector<std::string> vocab;
+  std::unordered_map<std::string, std::string> vocab;
   
   std::ifstream file(vocab_filename);
 
@@ -151,7 +177,10 @@ std::vector<std::string> read_vocab(char* vocab_filename) {
     std::istringstream iss(line);
     std::string word, token;
 
-    if (iss >> word >> token) vocab.push_back(word);
+    if (iss >> word >> token) {
+      if (tokenLookup) vocab[token] = word;
+      else vocab[word] = token;
+    }
   }
 
   file.close();
@@ -165,13 +194,7 @@ bool startsWith(const std::string str, const std::string prefix) {
 
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   std::vector<char> input_data = rftv(input_filename);
-  std::vector<std::string> vocab = read_vocab(vocabulary_filename);
-  std::unordered_map<std::string, int> vocab_map;
-
-  int n = 0;
-  for (std::string word : vocab) {
-    vocab_map[word] = n++;
-  }
+  std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
   std::string str(input_data.begin(), input_data.end());
   std::vector<std::string> words;
@@ -183,7 +206,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   }
 
   std::vector<std::vector<std::string>> subwords(words.size());
-  std::vector<int> tokens;
+  std::vector<std::string> tokens;
 
   std::unordered_map<std::string, std::string> prefix_cache;
 
@@ -201,9 +224,9 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
         max_subword = prefix_cache[words[i]];
       } else {
         // If not cached, find the longest subword using vocab
-      for (int j = 0; j < vocab.size(); j++) {
-        if (vocab[j].length() > max_subword.length()) {
-          if (startsWith(words[i], vocab[j])) max_subword = vocab[j];
+        for (const auto& vocab_w : vocab) {
+          if (vocab_w.first.length() > max_subword.length()) {
+            if (startsWith(words[i], vocab_w.first)) max_subword = vocab_w.first;
         }
         }
 
@@ -215,7 +238,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
         // If a subword is found, add it to the subwords list and remove it from the current word
         subwords[i].push_back(max_subword);
         words[i] = words[i].substr(max_subword.length()); // chop off subword
-        tokens.push_back(vocab_map[max_subword]);
+        tokens.push_back(vocab[max_subword]);
       } else {
         // If no subword is found, add the first character as a subword
         subwords[i].push_back(std::string(1, words[i][0]));
@@ -240,14 +263,7 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::vector<char> input_data = rftv(input_filename);
   
   // Read vocabulary into a vector of strings
-  std::vector<std::string> vocab = read_vocab(vocabulary_filename);
-
-  // Create a map from vocabulary words to their index
-  std::unordered_map<std::string, int> vocab_map;
-  int n = 0;
-  for (const auto& word : vocab) {
-    vocab_map[word] = n++;
-  }
+  std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, true);
 
   // Convert input data to a string
   std::string str(input_data.begin(), input_data.end());
@@ -258,8 +274,7 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::istringstream stream(str);
   while (stream >> word) {
       // Get the word's index from the vocab_map and append the corresponding word
-      int word_index = std::stoi(word);
-      result.insert(result.end(), vocab[word_index].begin(), vocab[word_index].end());
+      result.insert(result.end(), vocab[word].begin(), vocab[word].end());
   }
 
   // Replace all occurrences of "<>" with a space

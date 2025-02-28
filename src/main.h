@@ -15,7 +15,7 @@
 
 std::vector<char> rftv(char* filename);
 
-std::vector<std::string> read_vocab(char* vocab_filename);
+std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup);
 
 int generate_vocabulary(char* filename);
 
