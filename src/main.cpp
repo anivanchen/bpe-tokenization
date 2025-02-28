@@ -179,7 +179,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
   std::istringstream stream(str);
   while(stream >> word) {
-    words.push_back("<>" + word);
+    words.push_back(word + "<>");
   }
 
   std::vector<std::vector<std::string>> subwords(words.size());
