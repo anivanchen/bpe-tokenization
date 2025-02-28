@@ -236,31 +236,50 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 }
            
 int decode(char* input_filename, char* vocabulary_filename, char* output_filename) {
+  // Read input file into a vector
   std::vector<char> input_data = rftv(input_filename);
+  
+  // Read vocabulary into a vector of strings
   std::vector<std::string> vocab = read_vocab(vocabulary_filename);
-  std::unordered_map<std::string, int> vocab_map;
 
+  // Create a map from vocabulary words to their index
+  std::unordered_map<std::string, int> vocab_map;
   int n = 0;
-  for (std::string word : vocab) {
+  for (const auto& word : vocab) {
     vocab_map[word] = n++;
   }
 
+  // Convert input data to a string
   std::string str(input_data.begin(), input_data.end());
-  std::string text;
-  std::string word;
+  std::vector<char> result;
+  result.reserve(str.size());  // Reserve enough space for the result string
 
+  std::string word;
   std::istringstream stream(str);
-  while(stream >> word) {
-    text += vocab[stoi(word)];
+  while (stream >> word) {
+      // Get the word's index from the vocab_map and append the corresponding word
+      int word_index = std::stoi(word);
+      result.insert(result.end(), vocab[word_index].begin(), vocab[word_index].end());
   }
 
   // Replace all occurrences of "<>" with a space
-  size_t pos = 0;
-  while ((pos = text.find("<>", pos)) != std::string::npos) {
-      text.replace(pos++, 2, " ");
+  std::vector<char> final_result;
+  final_result.reserve(result.size());  // Reserve space for the final result
+
+  for (size_t i = 0; i < result.size(); ++i) {
+      // If we encounter "<>", replace it with a space
+      if (i + 1 < result.size() && result[i] == '<' && result[i + 1] == '>') {
+          final_result.push_back(' ');  // Replace with space
+          i++;  // Skip the next character '>'
+      } else {
+          final_result.push_back(result[i]);  // Copy current character as is
+      }
   }
 
-  // std::cout << text << std::endl;
+  // Convert final_result back to a string and write to output file
+  std::ofstream output_file(output_filename);
+  output_file.write(final_result.data(), final_result.size());
+  output_file.close();
 
   return 0;
 }
