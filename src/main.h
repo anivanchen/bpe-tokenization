@@ -17,7 +17,7 @@ std::vector<char> rftv(char* filename);
 
 std::vector<std::string> read_vocab(char* vocab_filename);
 
-int generate_vocabulary(char* filename, int ITERATION_LIMIT);
+int generate_vocabulary(char* filename);
 
 int encode(char* input_filename, 
            char* vocabulary_filename, 

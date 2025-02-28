@@ -25,7 +25,7 @@ std::vector<char> rftv(char* filename) {
   return buffer;
 }
 
-int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
+int generate_vocabulary(char* filename) {
   
   // Read corpus file into vector
   std::vector<char> raw_text = rftv(filename);
@@ -48,12 +48,12 @@ int generate_vocabulary(char* filename, int ITERATION_LIMIT) {
 
   for (auto word = unique_words.begin(); word != unique_words.end(); word++) {
     std::vector<std::string> characters;
-    characters.push_back("<>");
 
     for (int j = 0; j < word->first.length(); j++) {
       characters.push_back(std::string(1, word->first[j]));
     }
 
+    characters.push_back("<>");
     split_strings.push_back(characters);
     word_counts.push_back(word->second);
   }
