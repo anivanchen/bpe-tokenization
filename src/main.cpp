@@ -51,26 +51,6 @@ std::vector<char> rftv(char* filename) {
   return buffer;
 }
 
-char* c_rftv(char* filename) {
-
-  FILE* file = fopen(filename, "rb");
-  if (!file) return nullptr;
-
-  fseek(file, 0, SEEK_END);
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  char* buffer = (char*)malloc(size + 1);
-  if (buffer) {
-    fread(buffer, 1, size, file);
-    buffer[size] = '\0';
-  }
-
-  fclose(file);
-  return buffer;
-
-}
-
 int generate_vocabulary(char* filename) {
   
   // Read corpus file into vector
@@ -210,67 +190,34 @@ std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bo
   return vocab;
 }
 
-void c_read_vocab(const char* vocab_filename, std::unordered_map<const char*, const char*>& vocab) {
-  FILE* file = fopen(vocab_filename, "r");
-  if (!file) return;
-
-  char line[64];
-  while (fgets(line, sizeof(line), file)) {
-      // Remove newline characters at the end of the line
-      line[strcspn(line, "\n")] = 0;
-
-      char* word = strtok(line, " ");
-      char* token = strtok(NULL, " ");
-
-      // Store the word in the vocabulary map
-      char* word_copy = strdup(word);  // Allocate memory for word
-      char* token_copy = strdup(token);
-      vocab[word_copy] = token_copy;
-  }
-
-  fclose(file);
-}
-
-bool startsWith(const char* str, const char* prefix) {
-  if (strlen(prefix) > strlen(str)) return 0;
-  return strncmp(str, prefix, strlen(prefix)) == 0;
+bool startsWith(const std::string str, const std::string prefix) {
+  return str.compare(0, prefix.size(), prefix) == 0;
 }
 
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
-  char* input_data = c_rftv(input_filename);
-  if (!input_data) return -1;
+  std::vector<char> input_data = rftv(input_filename);
+  std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
-  std::unordered_map<const char*, const char*> vocab;
-  c_read_vocab(vocabulary_filename, vocab);
+  std::string str(input_data.begin(), input_data.end());
+  std::vector<std::string> words;
+  std::string word;
 
-  std::vector<char*> words;
-  words.reserve(strlen(input_data));
-
-  char* word = strtok(input_data, " ");
-  while(word) {
-    char* word_cpy = strdup(word);  // Create a new copy of the word
-    char* word_with_suffix = (char*)malloc(strlen(word_cpy) + 3);  // Allocate memory for word + "<>"
-    
-    strcpy(word_with_suffix, word_cpy);
-    strcat(word_with_suffix, "<>");
-    words.push_back(word_with_suffix);
-    free(word_cpy);
-    word = strtok(NULL, " ");
+  std::istringstream stream(str);
+  while(stream >> word) {
+    words.push_back(word + "<>");
   }
 
-  free(input_data);
+  std::vector<std::vector<std::string>> subwords(words.size());
+  std::vector<std::string> tokens;
 
-  std::vector<std::vector<char*>> subwords(words.size());
-  std::vector<const char*> tokens;
-
-  std::unordered_map<const char*, const char*> prefix_cache;
+  std::unordered_map<std::string, std::string> prefix_cache;
 
   // Iterate over each word in the words vector
   for (int i = 0; i < words.size(); i++) {
 
     // Continue processing the word until it is empty
-    while (strlen(words[i]) > 0) {
-      const char* max_subword = "";
+    while (words[i].length() > 0) {
+      std::string max_subword;
 
       // Find the longest subword in the vocabulary that matches the beginning of the current word
 
@@ -278,10 +225,9 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
       if (prefix_cache.find(words[i]) != prefix_cache.end()) {
         max_subword = prefix_cache[words[i]];
       } else {
-
         // If not cached, find the longest subword using vocab
         for (const auto& vocab_w : vocab) {
-          if (strlen(vocab_w.first) > strlen(max_subword)) {
+          if (vocab_w.first.length() > max_subword.length()) {
             if (startsWith(words[i], vocab_w.first)) max_subword = vocab_w.first;
         }
         }
@@ -290,15 +236,15 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
         prefix_cache[words[i]] = max_subword;
       }
 
-      if (max_subword != "") {
+      if (!max_subword.empty()) {
         // If a subword is found, add it to the subwords list and remove it from the current word
-        subwords[i].push_back(strdup(max_subword));
-        words[i] = words[i] + strlen(max_subword); // chop off subword
+        subwords[i].push_back(max_subword);
+        words[i] = words[i].substr(max_subword.length()); // chop off subword
         tokens.push_back(vocab[max_subword]);
       } else {
         // If no subword is found, add the first character as a subword
-        subwords[i].push_back(strdup(words[i]));
-        words[i] = words[i] + 1;
+        subwords[i].push_back(std::string(1, words[i][0]));
+        words[i] = words[i].substr(1);
       }
     }
   }
