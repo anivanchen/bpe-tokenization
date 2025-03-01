@@ -166,6 +166,8 @@ int generate_vocabulary(char* filename) {
 std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
   
   std::unordered_map<std::string, std::string> vocab;
+  vocab.reserve(32000);
+  vocab.rehash(64000);
   
   std::ifstream file(vocab_filename);
 
@@ -266,15 +268,16 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, true);
 
   // Convert input data to a string
-  std::string str(input_data.begin(), input_data.end());
+
   std::vector<char> result;
-  result.reserve(str.size());  // Reserve enough space for the result string
+  result.reserve(input_data.size());  // Reserve enough space for the result string
 
   std::string word;
-  std::istringstream stream(str);
+  std::istringstream stream(std::string(input_data.begin(), input_data.end()));
+  
   while (stream >> word) {
       // Get the word's index from the vocab_map and append the corresponding word
-      result.insert(result.end(), vocab[word].begin(), vocab[word].end());
+    for (char c : vocab[word]) result.push_back(c);
   }
 
   // Replace all occurrences of "<>" with a space
