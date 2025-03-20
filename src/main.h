@@ -13,8 +13,14 @@
 
 #include <chrono>
 
-std::vector<char> rftv(char* filename);
+#include "radixtrie.h"
 
+bool is_symb(char c);
+bool startsWith(const std::string str, const std::string prefix);
+void reverseString(std::string &str);
+std::string getTokRep(int n);
+
+std::vector<char> rftv(char* filename);
 std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup);
 
 int generate_vocabulary(char* filename);

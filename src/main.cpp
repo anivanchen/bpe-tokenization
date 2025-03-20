@@ -4,6 +4,10 @@ bool is_symb(char c) {
   return !std::isalnum(c) && !std::isspace(c) && c != '<' && c != '>';
 }
 
+bool startsWith(const std::string str, const std::string prefix) {
+  return str.compare(0, prefix.size(), prefix) == 0;
+}
+
 void reverseString(std::string &str) {
   int start = 0;
   int end = str.length() - 1;
@@ -49,6 +53,33 @@ std::vector<char> rftv(char* filename) {
   file.close();
 
   return buffer;
+}
+
+std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
+  
+  std::unordered_map<std::string, std::string> vocab;
+  vocab.reserve(32000);
+  vocab.rehash(64000);
+  
+  std::ifstream file(vocab_filename);
+
+  if (!file.is_open()) throw std::runtime_error("Could not open file");
+
+  std::string line;
+
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    std::string word, token;
+
+    if (iss >> word >> token) {
+      if (tokenLookup) vocab[token] = word;
+      else vocab[word] = token;
+    }
+  }
+
+  file.close();
+
+  return vocab;
 }
 
 int generate_vocabulary(char* filename) {
@@ -163,46 +194,14 @@ int generate_vocabulary(char* filename) {
   return 0;
 }
 
-std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
-  
-  std::unordered_map<std::string, std::string> vocab;
-  vocab.reserve(32000);
-  vocab.rehash(64000);
-  
-  std::ifstream file(vocab_filename);
-
-  if (!file.is_open()) throw std::runtime_error("Could not open file");
-
-  std::string line;
-
-  while (std::getline(file, line)) {
-    std::istringstream iss(line);
-    std::string word, token;
-
-    if (iss >> word >> token) {
-      if (tokenLookup) vocab[token] = word;
-      else vocab[word] = token;
-    }
-  }
-
-  file.close();
-
-  return vocab;
-}
-
-bool startsWith(const std::string str, const std::string prefix) {
-  return str.compare(0, prefix.size(), prefix) == 0;
-}
-
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   std::vector<char> input_data = rftv(input_filename);
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
-  std::string str(input_data.begin(), input_data.end());
   std::vector<std::string> words;
   std::string word;
 
-  std::istringstream stream(str);
+  std::istringstream stream(std::string(input_data.begin(), input_data.end()));
   while(stream >> word) {
     words.push_back(word + "<>");
   }
