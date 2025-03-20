@@ -142,6 +142,41 @@ class RadixTrie {
     node->isEnd = true;
   }
 
+  bool remove(Node* node, const std::string& word, size_t index = 0) {
+    if (index == word.size()) {
+      // We have reached the end of the word
+      if (!node->isEnd) {
+        return false;  // Word does not exist, nothing to remove
+      }
+      node->isEnd = false;  // Mark the node as not the end of a word
+
+      // If node has no children, it can be deleted
+      return node->children.empty();
+    }
+
+    char current_char = word[index];
+    if (node->children.find(current_char) == node->children.end()) {
+      // If the character doesn't exist in the current node's children, word doesn't exist
+      return false;
+    }
+
+    Node* child = node->children[current_char];
+
+    // Recursively remove the word from the child node
+    bool should_delete_child = remove(child, word, index + 1);
+
+    // If the child node should be deleted (i.e., it's no longer needed)
+    if (should_delete_child) {
+      node->children.erase(current_char);  // Remove the child node from the current node
+      // If the current node is not the end of another word and has no children, it can also be deleted
+      return node->children.empty() && !node->isEnd;
+    }
+
+    return false;  // If we don't need to delete the node, return false
+  }
+
+  void remove(const std::string& word) { remove(root, word); }
+
   // Utility function to print the Radix Trie
   void print() { printHelper(root, ""); }
 };
