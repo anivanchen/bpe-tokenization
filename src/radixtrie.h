@@ -35,6 +35,29 @@ class RadixTrie {
   RadixTrie() { root = new Node(); }
   ~RadixTrie() { deleteSubTree(root); }
 
+  bool search(const std::string& word) {
+    Node* node = root;
+
+    size_t i = 0;
+    while (i < word.size()) {
+      char current_char = word[i];
+      if (node->children.find(current_char) != node->children.end()) {
+        Node* child = node->children[current_char];
+
+        size_t j = 0;
+        while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
+
+        if (j == child->key.size()) {
+          node = child;
+          i += j;
+        } else
+          return false;
+      } else
+        return false;
+    }
+    return node->isEnd;
+  }
+
   // Utility function to print the Radix Trie
   void print() { printHelper(root, ""); }
 };
