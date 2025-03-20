@@ -58,6 +58,37 @@ class RadixTrie {
     return node->isEnd;
   }
 
+  std::string longest_prefix(const std::string& word) {
+    if (word.empty()) return "";
+
+    Node* node = root;
+    std::string longest_match;
+
+    size_t i = 0;
+    while (i < word.size()) {
+      char current_char = word[i];
+
+      // Check if current character exists in node's children
+      if (node->children.find(current_char) != node->children.end()) {
+        Node* child = node->children[current_char];
+
+        // Match prefix as far as possible
+        size_t j = 0;
+        while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
+
+        if (j == child->key.size()) {  // We matched entire key of child
+          longest_match += child->key;
+          node = child;  // Move to child
+          i += j;        // Skip matched portion in word
+        } else
+          break;  // Encountered  mismatch, stop here
+      } else
+        break;  // No matching child for current character
+    }
+
+    return longest_match;
+  }
+
   // Utility function to print the Radix Trie
   void print() { printHelper(root, ""); }
 };
