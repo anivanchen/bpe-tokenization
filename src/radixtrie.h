@@ -41,8 +41,9 @@ class RadixTrie {
     size_t i = 0;
     while (i < word.size()) {
       char current_char = word[i];
-      if (node->children.find(current_char) != node->children.end()) {
-        Node* child = node->children[current_char];
+      auto it = node->children.find(current_char);
+      if (it != node->children.end()) {
+        Node* child = it->second;
 
         size_t j = 0;
         // Match as many characters as possible with the child's key
@@ -70,8 +71,9 @@ class RadixTrie {
       char current_char = word[i];
 
       // Check if current character exists in node's children
-      if (node->children.find(current_char) != node->children.end()) {
-        Node* child = node->children[current_char];
+      auto it = node->children.find(current_char);
+      if (it != node->children.end()) {
+        Node* child = it->second;
 
         // Match prefix as far as possible
         size_t j = 0;
