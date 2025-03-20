@@ -16,7 +16,6 @@
 #include "radixtrie.h"
 
 bool is_symb(char c);
-bool startsWith(const std::string str, const std::string prefix);
 void reverseString(std::string &str);
 std::string getTokRep(int n);
 

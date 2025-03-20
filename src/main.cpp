@@ -4,10 +4,6 @@ bool is_symb(char c) {
   return !std::isalnum(c) && !std::isspace(c) && c != '<' && c != '>';
 }
 
-bool startsWith(const std::string str, const std::string prefix) {
-  return str.compare(0, prefix.size(), prefix) == 0;
-}
-
 void reverseString(std::string &str) {
   int start = 0;
   int end = str.length() - 1;
