@@ -198,6 +198,11 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::vector<char> input_data = rftv(input_filename);
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
+  RadixTrie trie;
+  for (const auto& vocab_w : vocab) {
+    trie.insert(vocab_w.first);
+  }
+
   std::vector<std::string> words;
   std::string word;
 
@@ -224,12 +229,8 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
       if (prefix_cache.find(words[i]) != prefix_cache.end()) {
         max_subword = prefix_cache[words[i]];
       } else {
-        // If not cached, find the longest subword using vocab
-        for (const auto& vocab_w : vocab) {
-          if (vocab_w.first.length() > max_subword.length()) {
-            if (startsWith(words[i], vocab_w.first)) max_subword = vocab_w.first;
-        }
-        }
+
+        max_subword = trie.longest_prefix(words[i]);
 
         // Cache the result for future lookups
         prefix_cache[words[i]] = max_subword;
