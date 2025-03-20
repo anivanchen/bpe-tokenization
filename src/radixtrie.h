@@ -49,8 +49,8 @@ class RadixTrie {
         while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
 
         if (j == child->key.size()) {  // If we matched the entire key
-          node = child;  // Move to child
-          i += j;  // Skip matched portion in word
+          node = child;                // Move to child
+          i += j;                      // Skip matched portion in word
         } else
           return false;  // Partial match - word doesn't exist
       } else
@@ -98,47 +98,50 @@ class RadixTrie {
     while (i < word.size()) {
       char current_char = word[i];
 
-      if (node->children.find(current_char) != node->children.end()) {
-        Node* child = node->children[current_char];
-
-        // Find common prefix
-        size_t j = 0;
-        while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
-
-        if (j == child->key.size()) {
-          node = child;  // Move to child and continue with next part of word
-          i += j;
-        } else {
-          // Split node at common prefix
-          std::string common_prefix = child->key.substr(0, j);
-          std::string remaining_child_key = child->key.substr(j);
-          std::string remaining_word = word.substr(i + j);
-
-          // Create new intermediate node for common prefix
-          Node* new_child = new Node(common_prefix);
-          node->children[current_char] = new_child;
-
-          // Create old child for remainder of old key
-          Node* old_child = new Node(remaining_child_key);
-          new_child->children[remaining_child_key[0]] = old_child;
-
-          // Set child as an end of word if needed
-          if (old_child->isEnd) old_child->isEnd = false;
-
-          // Insert remaining word from new node
-          insert(remaining_word);
-          return;
-        }
-      } else {
-        // No matching child, create new node
-        Node* new_node = new Node(std::string(1, current_char));
+      // If no child, create new branch for rest of word
+      if (node->children.find(current_char) == node->children.end()) {
+        Node* new_node = new Node(word.substr(i));
+        new_node->isEnd = true;
         node->children[current_char] = new_node;
-        node = new_node;
-        i++;
+        return;
+      }
+
+      Node* child = node->children[current_char];
+      size_t j = 0;
+      // Find common prefix between child->key and word starting at i
+      while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
+
+      // Full match: continue traversal
+      if (j == child->key.size()) {
+        node = child;
+        i += j;
+      } else {
+        // Partial match: need to split child
+        std::string commonPrefix = child->key.substr(0, j);
+        std::string childRemaining = child->key.substr(j);
+        std::string wordRemaining = word.substr(i + j);
+
+        // Create new intermediate node with common prefix
+        Node* intermediate = new Node(commonPrefix);
+        node->children[current_char] = intermediate;
+
+        // Adjust old child
+        child->key = childRemaining;
+        intermediate->children[childRemaining[0]] = child;
+
+        // If there is remaining part in inserted word, add as new child
+        if (!wordRemaining.empty()) {
+          Node* newChild = new Node(wordRemaining);
+          newChild->isEnd = true;
+          intermediate->children[wordRemaining[0]] = newChild;
+        } else {
+          intermediate->isEnd = true;  // Otherwise, intermediate node marks end of word
+        }
+        return;
       }
     }
 
-    // Mark end of word
+    // Mark last node as end of word
     node->isEnd = true;
   }
 
