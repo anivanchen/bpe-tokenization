@@ -45,15 +45,16 @@ class RadixTrie {
         Node* child = node->children[current_char];
 
         size_t j = 0;
+        // Match as many characters as possible with the child's key
         while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
 
-        if (j == child->key.size()) {
-          node = child;
-          i += j;
+        if (j == child->key.size()) {  // If we matched the entire key
+          node = child;  // Move to child
+          i += j;  // Skip matched portion in word
         } else
-          return false;
+          return false;  // Partial match - word doesn't exist
       } else
-        return false;
+        return false;  // Character not found - word doesn't exist
     }
     return node->isEnd;
   }
@@ -81,7 +82,7 @@ class RadixTrie {
           node = child;  // Move to child
           i += j;        // Skip matched portion in word
         } else
-          break;  // Encountered  mismatch, stop here
+          break;  // Encountered mismatch, stop here
       } else
         break;  // No matching child for current character
     }
