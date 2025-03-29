@@ -58,20 +58,13 @@ std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bo
   vocab.rehash(64000);
   
   std::ifstream file(vocab_filename);
-
   if (!file.is_open()) throw std::runtime_error("Could not open file");
 
-  std::string line;
-
-  while (std::getline(file, line)) {
-    std::istringstream iss(line);
     std::string word, token;
-
-    if (iss >> word >> token) {
+  while (file >> word >> token) {
       if (tokenLookup) vocab[token] = word;
       else vocab[word] = token;
     }
-  }
 
   file.close();
 
