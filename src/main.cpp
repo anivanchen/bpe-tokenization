@@ -153,9 +153,6 @@ int generate_vocabulary(char* filename) {
         if (ab == max_key) {
           split_strings[i][j] = ab;
           split_strings[i].erase(split_strings[i].begin() + j + 1);
-
-          vocabulary[std::string(1, ab.at(0))] -= word_counts[i];
-          vocabulary[std::string(1, ab.at(1))] -= word_counts[i];
           vocabulary[ab] += word_counts[i];
         }
       }
