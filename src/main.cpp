@@ -79,13 +79,9 @@ int generate_vocabulary(char* filename) {
   // Build dictionary of unique words and count frequency
 
   std::unordered_map<std::string, int> unique_words;
-
-  char* word = strtok(raw_text.data(), " \t\n");
-
-  while (word) {
-    unique_words[word]++;
-    word = strtok(NULL, " \t\n");
-  }
+  std::string word;
+  std::istringstream stream(std::string(raw_text.begin(), raw_text.end()));
+  while (stream >> word) unique_words[word]++;
 
   // Split words into characters, mark ends with <>, 
 
