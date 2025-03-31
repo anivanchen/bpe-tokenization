@@ -181,62 +181,52 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
   RadixTrie trie;
-  for (const auto& vocab_w : vocab) {
-    trie.insert(vocab_w.first);
-  }
-
-  std::vector<std::string> words;
-  std::string word;
-
-  std::istringstream stream(std::string(input_data.begin(), input_data.end()));
-  while(stream >> word) {
-    words.push_back(word + "<>");
-  }
-
-  std::vector<std::vector<std::string>> subwords(words.size());
+  for (const auto& vocab_w : vocab) trie.insert(vocab_w.first);
+  
+  std::string input_str(input_data.begin(), input_data.end());
   std::vector<std::string> tokens;
-
   std::unordered_map<std::string, std::string> prefix_cache;
 
-  // Iterate over each word in the words vector
-  for (int i = 0; i < words.size(); i++) {
+  // Process the input string word by word (whitespace-delimited)
+  size_t pos = 0;
+  while (pos < input_str.size()) {
+    // Skip leading whitespace
+    while (pos < input_str.size() && std::isspace(input_str[pos])) pos++;
+    if (pos >= input_str.size()) break;
+    
+    // Extract word
+    size_t end = pos;
+    while (end < input_str.size() && !std::isspace(input_str[end])) end++;
+    std::string current_word = input_str.substr(pos, end - pos) + "<>";
+    
+    pos = end;
 
-    // Continue processing the word until it is empty
-    while (words[i].length() > 0) {
+    while (!current_word.empty()) {
+      
       std::string max_subword;
-
-      // Find the longest subword in the vocabulary that matches the beginning of the current word
-
-      // Check if the longest subword is already cached
-      if (prefix_cache.find(words[i]) != prefix_cache.end()) {
-        max_subword = prefix_cache[words[i]];
+      // Check cache first
+      if (prefix_cache.find(current_word) != prefix_cache.end()) {
+        max_subword = prefix_cache[current_word];
       } else {
-
-        max_subword = trie.longest_prefix(words[i]);
-
-        // Cache the result for future lookups
-        prefix_cache[words[i]] = max_subword;
+        max_subword = trie.longest_prefix(current_word);
+        prefix_cache[current_word] = max_subword;
       }
 
       if (!max_subword.empty()) {
-        // If a subword is found, add it to the subwords list and remove it from the current word
-        subwords[i].push_back(max_subword);
-        words[i] = words[i].substr(max_subword.length()); // chop off subword
         tokens.push_back(vocab[max_subword]);
+        current_word = current_word.substr(max_subword.length()); // Chop off the subword from the current word
       } else {
         // If no subword is found, add the first character as a subword
-        subwords[i].push_back(std::string(1, words[i][0]));
-        words[i] = words[i].substr(1);
+        tokens.push_back(vocab[std::string(1, current_word[0])]);
+        current_word = current_word.substr(1);
       }
     }
   }
 
   std::ofstream output_file(output_filename);
-
   for (const auto& token : tokens) {
     output_file << token << " ";
   }
-
   output_file.close();  
 
   return 0;
