@@ -77,14 +77,12 @@ int generate_vocabulary(char* filename) {
   std::vector<char> raw_text = rftv(filename);
 
   // Build dictionary of unique words and count frequency
-
   std::unordered_map<std::string, int> unique_words;
   std::string word;
   std::istringstream stream(std::string(raw_text.begin(), raw_text.end()));
   while (stream >> word) unique_words[word]++;
 
   // Split words into characters, mark ends with <>, 
-
   std::vector<std::vector<std::string>> split_strings;
   std::vector<int> word_counts;
 
@@ -101,29 +99,20 @@ int generate_vocabulary(char* filename) {
   }
 
   // Initialize the vocabulary with unique characters
-
-  std::unordered_map<std::string, int> vocabulary;
-  std::vector<std::string> ins_ord_vocab;
-
-  for (int i = 0; i < split_strings.size(); i++) {
-    for (int j = 0; j < split_strings[i].size(); j++) {
-      vocabulary[split_strings[i][j]] += word_counts[i];
+  std::vector<std::string> vocabulary;
+  for (const auto& word : split_strings) {
+    for (const auto& chr : word) {
+      if (std::find(vocabulary.begin(), vocabulary.end(), chr) != vocabulary.end()) vocabulary.push_back(chr);
     }
-  }
-
-  for (const auto& vocab: vocabulary) {
-    ins_ord_vocab.push_back(vocab.first);
   }
 
   int iter = 0;
 
-  while (vocabulary.size() < 32000) {
-    
+  while (vocabulary.size() < 50000) {
     std::unordered_map<std::string, int> bigrams;
 
     // Find bigrams of characters in split_words and counts of bigrams
     // Track the most frequent bigram
-
     int max_val = 0;
     std::string max_key = "";
 
@@ -142,7 +131,7 @@ int generate_vocabulary(char* filename) {
 
     if (bigrams.empty()) break;
 
-    ins_ord_vocab.push_back(max_key);
+    vocabulary.push_back(max_key);
     
     // Merge all instances of the most frequent bigram
     for (size_t i = 0; i < split_strings.size(); i++) {
@@ -161,11 +150,10 @@ int generate_vocabulary(char* filename) {
   }
 
   // Write vocabulary to file for storage
-
   std::ofstream output_file("vocabulary.tokens");
 
   int n = 0;
-  for (std::string s : ins_ord_vocab) {
+  for (std::string s : vocabulary) {
     output_file << s << " " << getTokRep(n++) << std::endl;
   }
 
