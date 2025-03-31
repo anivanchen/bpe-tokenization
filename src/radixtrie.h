@@ -64,32 +64,26 @@ class RadixTrie {
     if (word.empty()) return "";
 
     Node* node = root;
-    std::string longest_match;
-
+    std::string_view longest_match;
     size_t i = 0;
     while (i < word.size()) {
-      char current_char = word[i];
+      auto it = node->children.find(word[i]);
+      if (it == node->children.end()) break;
 
-      // Check if current character exists in node's children
-      auto it = node->children.find(current_char);
-      if (it != node->children.end()) {
-        Node* child = it->second;
+      Node* child = it->second;
 
-        // Match prefix as far as possible
-        size_t j = 0;
-        while (j < child->key.size() && i + j < word.size() && child->key[j] == word[i + j]) j++;
+      auto mismatch_pos = std::mismatch(child->key.begin(), child->key.end(), word.begin() + i);
+      size_t j = std::distance(child->key.begin(), mismatch_pos.first);
 
-        if (j == child->key.size()) {  // We matched entire key of child
-          longest_match += child->key;
-          node = child;  // Move to child
-          i += j;        // Skip matched portion in word
-        } else
-          break;  // Encountered mismatch, stop here
+      if (j == child->key.size()) {  // Fully matched child key
+        longest_match = std::string_view(word.data(), i + j);
+        node = child;
+        i += j;
       } else
-        break;  // No matching child for current character
+        break;
     }
 
-    return longest_match;
+    return std::string(longest_match);  // Convert string_view back to string
   }
 
   void insert(const std::string& word) {
