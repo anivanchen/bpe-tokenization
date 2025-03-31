@@ -145,21 +145,19 @@ int generate_vocabulary(char* filename) {
     ins_ord_vocab.push_back(max_key);
     
     // Merge all instances of the most frequent bigram
+    for (size_t i = 0; i < split_strings.size(); i++) {
+      for (size_t j = 0; j < split_strings[i].size() - 1; j++) {
+      std::string_view first = split_strings[i][j];
+      std::string_view second = split_strings[i][j + 1];
 
-    for (int i = 0; i < split_strings.size(); i++) {
-      for (int j = 0; j < split_strings[i].size() - 1; j++) {
-        std::string ab = split_strings[i][j] + split_strings[i][j + 1];
-
-        if (ab == max_key) {
-          split_strings[i][j] = ab;
+      if ((first.length() + second.length() == max_key.length()) && (std::string(first) + std::string(second) == max_key)) {
+        split_strings[i][j] = max_key; // Store the merged string
           split_strings[i].erase(split_strings[i].begin() + j + 1);
-          vocabulary[ab] += word_counts[i];
         }
       }
     }
 
     std::cout << "(" << iter++ << ") " << max_key << std::endl; 
-
   }
 
   // Write vocabulary to file for storage
