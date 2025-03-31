@@ -1,7 +1,7 @@
 #include "main.h"
 
 bool is_symb(char c) {
-  return !std::isalnum(c) && !std::isspace(c) && c != '<' && c != '>';
+  return !std::isalnum(c) && c != '<' && c != '>';
 }
 
 void reverseString(std::string &str) {
@@ -118,12 +118,12 @@ int generate_vocabulary(char* filename) {
 
     for (int i = 0; i < split_strings.size(); i++) {
       for (int j = 0; j < split_strings[i].size() - 1; j++) {
-        if (is_symb(*(split_strings[i][j].c_str())) || is_symb(*(split_strings[i][j+1].c_str()))) continue;
+        if (is_symb(split_strings[i][j][0]) || is_symb(split_strings[i][j+1][0])) continue;
         std::string ab = split_strings[i][j] + split_strings[i][j+1];
-        bigrams[ab] += word_counts[i];
+        int count = bigrams[ab] += word_counts[i];
 
-        if (bigrams[ab] > max_val) {
-          max_val = bigrams[ab];
+        if (count > max_val) {
+          max_val = count;
           max_key = ab;
         }
       }
