@@ -67,10 +67,7 @@ class RadixTrie {
     std::string longest_match;
     size_t i = 0;
     while (i < word.size()) {
-      if (node->isEnd) {
-        // Update longest match when we find a complete word
-        longest_match = word.substr(0, i);
-      }
+      if (node->isEnd) longest_match = word.substr(0, i);  // Update longest match when we find a complete word
       
       auto it = node->children.find(word[i]);
       if (it == node->children.end()) break;
@@ -81,14 +78,16 @@ class RadixTrie {
       size_t j = std::distance(child->key.begin(), mismatch_pos.first);
 
       if (j == child->key.size()) {  // Fully matched child key
-        longest_match = std::string_view(word.data(), i + j);
         node = child;
         i += j;
       } else
         break;
     }
 
-    return std::string(longest_match);  // Convert string_view back to string
+    // Check one more time in case last node is end of word
+    if (node->isEnd) longest_match = word.substr(0, i);
+
+    return longest_match;
   }
 
   void insert(const std::string& word) {
