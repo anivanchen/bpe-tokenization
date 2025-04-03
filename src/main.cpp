@@ -54,8 +54,8 @@ std::vector<char> rftv(char* filename) {
 std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
   
   std::unordered_map<std::string, std::string> vocab;
-  vocab.reserve(32000);
-  vocab.rehash(64000);
+  vocab.reserve(50000);
+  vocab.rehash(100000);
   
   std::ifstream file(vocab_filename);
   if (!file.is_open()) throw std::runtime_error("Could not open file");
@@ -100,11 +100,15 @@ int generate_vocabulary(char* filename) {
 
   // Initialize the vocabulary with unique characters
   std::vector<std::string> vocabulary;
-  for (const auto& word : split_strings) {
-    for (const auto& chr : word) {
-      if (std::find(vocabulary.begin(), vocabulary.end(), chr) != vocabulary.end()) vocabulary.push_back(chr);
+  // Initialize with all printable ASCII characters (33-126) except whitespace
+  for (int i = 33; i <= 126; i++) {
+    if (!std::isspace(i)) {
+      vocabulary.push_back(std::string(1, static_cast<char>(i)));
     }
   }
+
+  // Add the special end token
+  vocabulary.push_back("<>");
 
   int iter = 0;
 

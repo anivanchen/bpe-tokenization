@@ -64,9 +64,14 @@ class RadixTrie {
     if (word.empty()) return "";
 
     Node* node = root;
-    std::string_view longest_match;
+    std::string longest_match;
     size_t i = 0;
     while (i < word.size()) {
+      if (node->isEnd) {
+        // Update longest match when we find a complete word
+        longest_match = word.substr(0, i);
+      }
+      
       auto it = node->children.find(word[i]);
       if (it == node->children.end()) break;
 
