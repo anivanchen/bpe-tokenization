@@ -60,11 +60,11 @@ std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bo
   std::ifstream file(vocab_filename);
   if (!file.is_open()) throw std::runtime_error("Could not open file");
 
-    std::string word, token;
+  std::string word, token;
   while (file >> word >> token) {
-      if (tokenLookup) vocab[token] = word;
-      else vocab[word] = token;
-    }
+    if (tokenLookup) vocab[token] = word;
+    else vocab[word] = token;
+  }
 
   file.close();
 
@@ -142,10 +142,10 @@ int generate_vocabulary(char* filename) {
       for (size_t j = 0; j < split_strings[i].size() - 1; j++) {
       std::string_view first = split_strings[i][j];
       std::string_view second = split_strings[i][j + 1];
-
+      
       if ((first.length() + second.length() == max_key.length()) && (std::string(first) + std::string(second) == max_key)) {
         split_strings[i][j] = max_key; // Store the merged string
-          split_strings[i].erase(split_strings[i].begin() + j + 1);
+        split_strings[i].erase(split_strings[i].begin() + j + 1);
         }
       }
     }
@@ -251,7 +251,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   for (const auto& token : tokens) {
     output_file << token << " ";
   }
-  output_file.close();  
+  output_file.close();
 
   return 0;
 }
@@ -300,7 +300,45 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
 int main (int argc, char* argv[]) {
 
-  generate_vocabulary("../.testfiles/war-and-peace.txt", 2048);
+  generate_vocabulary("../.testfiles/war-and-peace.txt");
+  generate_vocabulary("../.testfiles/alice.txt");
+  generate_vocabulary("../.testfiles/24-US-cleaned.txt");
+
+  encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens", "war-and-peace.txt.enc");
+  encode("../.testfiles/test.dat", "vocabulary.tokens", "test.dat.enc");
+
+  encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens.b", "war-and-peace.txt.enc.b");
+  encode("../.testfiles/ub-article.txt", "vocabulary.tokens.b2", "ub-article.txt.enc.b2");
+
+  encode("../.testfiles/24-IN.txt", "vocabulary.tokens.b", "24-IN.enc");
+  decode("test.dat.enc", "vocabulary.tokens", "test.dat.dec");
+  decode("war-and-peace.txt.enc.b", "vocabulary.tokens.b", "war-and-peace.txt.dec.b");
+  decode("ub-article.txt.enc.b2", "vocabulary.tokens.b2", "ub-article.txt.dec.b2");
+
+  std::vector<std::chrono::duration<double>> times;
+
+  for (int i = 0; i < 50; i++) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens.b2", "war-and-peace.txt.enc.b2");
+    
+    // decode("war-and-peace.txt.enc.b", "vocabulary.tokens.b", "war-and-peace.txt.dec.b");
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    times.push_back(elapsed);
+    std::cout << "Time taken: " << elapsed.count() << " seconds" << std::endl;
+  }
+
+  double averageTestTime = 0;
+
+  for (int i = 0; i < 50; i++) {
+    averageTestTime += times[i].count();
+  }
+
+  averageTestTime /= 50;
+
+  std::cout << "Average Loop Time: " << averageTestTime << " seconds" << std::endl;
 
   return 0;
 }
