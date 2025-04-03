@@ -168,6 +168,40 @@ int generate_vocabulary(char* filename) {
 
 int encode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   std::vector<char> input_data = rftv(input_filename);
+
+  // Normalize smart quotes to straight quotes
+  for (size_t i = 0; i < input_data.size(); i++) {
+    // Check for UTF-8 sequences of smart quotes (they start with E2 80)
+    if (i + 2 < input_data.size() && 
+        static_cast<unsigned char>(input_data[i]) == 0xE2 && 
+        static_cast<unsigned char>(input_data[i+1]) == 0x80) {
+      
+      unsigned char third_byte = static_cast<unsigned char>(input_data[i+2]);
+      
+      // Smart double quotes (left " = E2 80 9C, right " = E2 80 9D)
+      if (third_byte == 0x9C || third_byte == 0x9D) {
+        input_data[i] = '"';
+        input_data.erase(input_data.begin() + i + 1, input_data.begin() + i + 3);
+        i++; // Move past the replaced quote
+        continue;
+      }
+      
+      // Smart single quotes (left ' = E2 80 98, right ' = E2 80 99)
+      if (third_byte == 0x98 || third_byte == 0x99) {
+        input_data[i] = '\'';
+        input_data.erase(input_data.begin() + i + 1, input_data.begin() + i + 3);
+        i++; // Move past the replaced quote
+        continue;
+      }
+    }
+    
+    // Handle any other non-ASCII characters
+    if (static_cast<unsigned char>(input_data[i]) < 32 || 
+        static_cast<unsigned char>(input_data[i]) > 126) {
+      input_data[i] = '?';
+    }
+  }
+
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, false);
 
   RadixTrie trie;
