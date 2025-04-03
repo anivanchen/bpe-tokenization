@@ -1,3 +1,27 @@
+/*******************************************************************************
+ * RadixTrie Implementation for BPE Tokenizer
+ * 
+ * A space and time-efficient implementation of a Radix Trie data
+ * structure for subword tokenization in the BPE algorithm.
+ * 
+ * Author: Ivan Chen <ivanchen07@gmail.com>
+ * Created: March 2025
+ * Version: 1.0
+ * 
+ * This implementation features:
+ * - Efficient longest prefix matching for tokenization
+ * - Optimized memory usage with shared prefixes
+ * - Fast lookup operations using unordered_map for child nodes
+ * - Support for insert, search, and remove operations
+ * - Bulk character comparison using std::mismatch for performance
+ * 
+ * The RadixTrie enables fast lookups during the tokenization process,
+ * significantly improving encoding performance compared to brute-force
+ * string matching.
+ * 
+ * License: GNU General Public License v3.0
+ *******************************************************************************/
+
 #pragma once
 #ifndef __RADIX_TRIE_H__
 #define __RADIX_TRIE_H__
@@ -68,7 +92,7 @@ class RadixTrie {
     size_t i = 0;
     while (i < word.size()) {
       if (node->isEnd) longest_match = word.substr(0, i);  // Update longest match when we find a complete word
-      
+
       auto it = node->children.find(word[i]);
       if (it == node->children.end()) break;
 

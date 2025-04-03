@@ -1,3 +1,26 @@
+/*******************************************************************************
+ * Byte-Pair Encoding (BPE) Tokenizer Header
+ * 
+ * Header file defining the core interfaces for the BPE tokenizer implementation.
+ * This file contains function declarations for the tokenizer's main operations
+ * and utility functions.
+ * 
+ * Author: Ivan Chen <ivanchen07@gmail.com>
+ * Created: March 2025
+ * Version: 1.0
+ * 
+ * Declarations include:
+ * - Core tokenizer functions (generate_vocabulary, encode, decode)
+ * - Utility functions for string and token handling
+ * - File I/O operations for vocabulary and text processing
+ * 
+ * Dependencies:
+ * - C++ Standard Library
+ * - RadixTrie data structure (radixtrie.h)
+ * 
+ * License: GNU General Public License v3.0
+ *******************************************************************************/
+
 #pragma once
 #ifndef __MAIN_H__
 #define __MAIN_H__

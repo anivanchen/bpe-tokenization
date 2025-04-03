@@ -1,18 +1,41 @@
+/*******************************************************************************
+ * Byte-Pair Encoding (BPE) Tokenizer Implementation
+ * 
+ * A C++ implementation of the BPE algorithm for subword 
+ * tokenization with optimized data structures and algorithms 
+ * for text processing applications.
+ * 
+ * Author: Ivan Chen <ivanchen07@gmail.com>
+ * Created: March 2025
+ * Version: 1.0
+ * 
+ * This file contains the core functionality for the BPE tokenizer:
+ * - Vocabulary generation from a training corpus
+ * - Text encoding using a trained vocabulary
+ * - Token decoding to reconstruct original text
+ * - Helper functions for token representation and string manipulation
+ * 
+ * Features:
+ * - RadixTrie data structure for fast prefix matching
+ * - Base94 token representation for compact storage
+ * - UTF-8 handling with smart quote normalization
+ * 
+ * License: GNU General Public License v3.0
+ *******************************************************************************/
+
 #include "main.h"
 
-bool is_symb(char c) {
-  return !std::isalnum(c) && c != '<' && c != '>';
-}
+bool is_symb(char c) { return !std::isalnum(c) && c != '<' && c != '>'; }
 
-void reverseString(std::string &str) {
+void reverseString(std::string& str) {
   int start = 0;
   int end = str.length() - 1;
 
   while (start < end) {
-      // Swap characters at start and end
-      std::swap(str[start], str[end]);
-      start++;
-      end--;
+    // Swap characters at start and end
+    std::swap(str[start], str[end]);
+    start++;
+    end--;
   }
 }
 
@@ -31,11 +54,10 @@ std::string getTokRep(int n) {
 }
 
 std::vector<char> rftv(char* filename) {
-
-  std::ifstream file(filename, std::ios::binary | std::ios::ate); // open as binary and at end of file
+  std::ifstream file(filename, std::ios::binary | std::ios::ate);  // open as binary and at end of file
 
   if (!file.is_open()) throw std::runtime_error("Could not open file");
-  
+
   std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
 
@@ -43,8 +65,10 @@ std::vector<char> rftv(char* filename) {
 
   std::vector<char> buffer(size);
 
-  if (!file.read(buffer.data(), size)) throw std::runtime_error("Error while reading file");
-  else std::cout << "Read " << size << " bytes" << std::endl;
+  if (!file.read(buffer.data(), size))
+    throw std::runtime_error("Error while reading file");
+  else
+    std::cout << "Read " << size << " bytes" << std::endl;
 
   file.close();
 
@@ -52,18 +76,19 @@ std::vector<char> rftv(char* filename) {
 }
 
 std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bool tokenLookup) {
-  
   std::unordered_map<std::string, std::string> vocab;
   vocab.reserve(50000);
   vocab.rehash(100000);
-  
+
   std::ifstream file(vocab_filename);
   if (!file.is_open()) throw std::runtime_error("Could not open file");
 
   std::string word, token;
   while (file >> word >> token) {
-    if (tokenLookup) vocab[token] = word;
-    else vocab[word] = token;
+    if (tokenLookup)
+      vocab[token] = word;
+    else
+      vocab[word] = token;
   }
 
   file.close();
@@ -72,7 +97,6 @@ std::unordered_map<std::string, std::string> read_vocab(char* vocab_filename, bo
 }
 
 int generate_vocabulary(char* filename) {
-  
   // Read corpus file into vector
   std::vector<char> raw_text = rftv(filename);
 
@@ -82,7 +106,7 @@ int generate_vocabulary(char* filename) {
   std::istringstream stream(std::string(raw_text.begin(), raw_text.end()));
   while (stream >> word) unique_words[word]++;
 
-  // Split words into characters, mark ends with <>, 
+  // Split words into characters, mark ends with <>,
   std::vector<std::vector<std::string>> split_strings;
   std::vector<int> word_counts;
 
@@ -122,8 +146,8 @@ int generate_vocabulary(char* filename) {
 
     for (int i = 0; i < split_strings.size(); i++) {
       for (int j = 0; j < split_strings[i].size() - 1; j++) {
-        if (is_symb(split_strings[i][j][0]) || is_symb(split_strings[i][j+1][0])) continue;
-        std::string ab = split_strings[i][j] + split_strings[i][j+1];
+        if (is_symb(split_strings[i][j][0]) || is_symb(split_strings[i][j + 1][0])) continue;
+        std::string ab = split_strings[i][j] + split_strings[i][j + 1];
         int count = bigrams[ab] += word_counts[i];
 
         if (count > max_val) {
@@ -136,21 +160,22 @@ int generate_vocabulary(char* filename) {
     if (bigrams.empty()) break;
 
     vocabulary.push_back(max_key);
-    
+
     // Merge all instances of the most frequent bigram
     for (size_t i = 0; i < split_strings.size(); i++) {
       for (size_t j = 0; j < split_strings[i].size() - 1; j++) {
-      std::string_view first = split_strings[i][j];
-      std::string_view second = split_strings[i][j + 1];
-      
-      if ((first.length() + second.length() == max_key.length()) && (std::string(first) + std::string(second) == max_key)) {
-        split_strings[i][j] = max_key; // Store the merged string
-        split_strings[i].erase(split_strings[i].begin() + j + 1);
+        std::string_view first = split_strings[i][j];
+        std::string_view second = split_strings[i][j + 1];
+
+        if ((first.length() + second.length() == max_key.length()) &&
+            (std::string(first) + std::string(second) == max_key)) {
+          split_strings[i][j] = max_key;  // Store the merged string
+          split_strings[i].erase(split_strings[i].begin() + j + 1);
         }
       }
     }
 
-    std::cout << "(" << iter++ << ") " << max_key << std::endl; 
+    std::cout << "(" << iter++ << ") " << max_key << std::endl;
   }
 
   // Write vocabulary to file for storage
@@ -172,32 +197,29 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
   // Normalize smart quotes to straight quotes
   for (size_t i = 0; i < input_data.size(); i++) {
     // Check for UTF-8 sequences of smart quotes (they start with E2 80)
-    if (i + 2 < input_data.size() && 
-        static_cast<unsigned char>(input_data[i]) == 0xE2 && 
-        static_cast<unsigned char>(input_data[i+1]) == 0x80) {
-      
-      unsigned char third_byte = static_cast<unsigned char>(input_data[i+2]);
-      
+    if (i + 2 < input_data.size() && static_cast<unsigned char>(input_data[i]) == 0xE2 &&
+        static_cast<unsigned char>(input_data[i + 1]) == 0x80) {
+      unsigned char third_byte = static_cast<unsigned char>(input_data[i + 2]);
+
       // Smart double quotes (left " = E2 80 9C, right " = E2 80 9D)
       if (third_byte == 0x9C || third_byte == 0x9D) {
         input_data[i] = '"';
         input_data.erase(input_data.begin() + i + 1, input_data.begin() + i + 3);
-        i++; // Move past the replaced quote
+        i++;  // Move past the replaced quote
         continue;
       }
-      
+
       // Smart single quotes (left ' = E2 80 98, right ' = E2 80 99)
       if (third_byte == 0x98 || third_byte == 0x99) {
         input_data[i] = '\'';
         input_data.erase(input_data.begin() + i + 1, input_data.begin() + i + 3);
-        i++; // Move past the replaced quote
+        i++;  // Move past the replaced quote
         continue;
       }
     }
-    
+
     // Handle any other non-ASCII characters
-    if (static_cast<unsigned char>(input_data[i]) < 32 || 
-        static_cast<unsigned char>(input_data[i]) > 126) {
+    if (static_cast<unsigned char>(input_data[i]) < 32 || static_cast<unsigned char>(input_data[i]) > 126) {
       input_data[i] = '?';
     }
   }
@@ -206,7 +228,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
   RadixTrie trie;
   for (const auto& vocab_w : vocab) trie.insert(vocab_w.first);
-  
+
   std::string input_str(input_data.begin(), input_data.end());
   std::vector<std::string> tokens;
   std::unordered_map<std::string, std::string> prefix_cache;
@@ -217,16 +239,15 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
     // Skip leading whitespace
     while (pos < input_str.size() && std::isspace(input_str[pos])) pos++;
     if (pos >= input_str.size()) break;
-    
+
     // Extract word
     size_t end = pos;
     while (end < input_str.size() && !std::isspace(input_str[end])) end++;
     std::string current_word = input_str.substr(pos, end - pos) + "<>";
-    
+
     pos = end;
 
     while (!current_word.empty()) {
-      
       std::string max_subword;
       // Check cache first
       if (prefix_cache.find(current_word) != prefix_cache.end()) {
@@ -238,7 +259,7 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
       if (!max_subword.empty()) {
         tokens.push_back(vocab[max_subword]);
-        current_word = current_word.substr(max_subword.length()); // Chop off the subword from the current word
+        current_word = current_word.substr(max_subword.length());  // Chop off the subword from the current word
       } else {
         // If no subword is found, add the first character as a subword
         tokens.push_back(vocab[std::string(1, current_word[0])]);
@@ -255,11 +276,11 @@ int encode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
   return 0;
 }
-           
+
 int decode(char* input_filename, char* vocabulary_filename, char* output_filename) {
   // Read input file into a vector
   std::vector<char> input_data = rftv(input_filename);
-  
+
   // Read vocabulary into a vector of strings
   std::unordered_map<std::string, std::string> vocab = read_vocab(vocabulary_filename, true);
 
@@ -270,9 +291,9 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
   std::string word;
   std::istringstream stream(std::string(input_data.begin(), input_data.end()));
-  
+
   while (stream >> word) {
-      // Get the word's index from the vocab_map and append the corresponding word
+    // Get the word's index from the vocab_map and append the corresponding word
     for (char c : vocab[word]) result.push_back(c);
   }
 
@@ -281,13 +302,13 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
   final_result.reserve(result.size());  // Reserve space for the final result
 
   for (size_t i = 0; i < result.size(); ++i) {
-      // If we encounter "<>", replace it with a space
-      if (i + 1 < result.size() && result[i] == '<' && result[i + 1] == '>') {
-          final_result.push_back(' ');  // Replace with space
-          i++;  // Skip the next character '>'
-      } else {
-          final_result.push_back(result[i]);  // Copy current character as is
-      }
+    // If we encounter "<>", replace it with a space
+    if (i + 1 < result.size() && result[i] == '<' && result[i + 1] == '>') {
+      final_result.push_back(' ');  // Replace with space
+      i++;                          // Skip the next character '>'
+    } else {
+      final_result.push_back(result[i]);  // Copy current character as is
+    }
   }
 
   // Convert final_result back to a string and write to output file
@@ -298,8 +319,7 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
   return 0;
 }
 
-int main (int argc, char* argv[]) {
-
+int main(int argc, char* argv[]) {
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <command> [args...]" << std::endl;
     std::cerr << "Commands:" << std::endl;
@@ -317,22 +337,19 @@ int main (int argc, char* argv[]) {
       return 1;
     }
     return generate_vocabulary(argv[2]);
-  } 
-  else if (command == "encode") {
+  } else if (command == "encode") {
     if (argc != 5) {
       std::cerr << "Usage: " << argv[0] << " encode <input> <vocab> <output>" << std::endl;
       return 1;
     }
     return encode(argv[2], argv[3], argv[4]);
-  } 
-  else if (command == "decode") {
+  } else if (command == "decode") {
     if (argc != 5) {
       std::cerr << "Usage: " << argv[0] << " decode <input> <vocab> <output>" << std::endl;
       return 1;
     }
     return decode(argv[2], argv[3], argv[4]);
-  } 
-  else {
+  } else {
     std::cerr << "Unknown command: " << command << std::endl;
     return 1;
   }
