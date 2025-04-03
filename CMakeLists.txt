@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 project(
   bpe
   VERSION 0.1
-  DESCRIPTION "Implementation of Byte-Pair Encoding tokenization for Large Language Models"
+  DESCRIPTION "Implementation of Byte-Pair Encoding tokenization"
   LANGUAGES CXX
 )
 
