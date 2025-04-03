@@ -300,45 +300,42 @@ int decode(char* input_filename, char* vocabulary_filename, char* output_filenam
 
 int main (int argc, char* argv[]) {
 
-  generate_vocabulary("../.testfiles/war-and-peace.txt");
-  generate_vocabulary("../.testfiles/alice.txt");
-  generate_vocabulary("../.testfiles/24-US-cleaned.txt");
-
-  encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens", "war-and-peace.txt.enc");
-  encode("../.testfiles/test.dat", "vocabulary.tokens", "test.dat.enc");
-
-  encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens.b", "war-and-peace.txt.enc.b");
-  encode("../.testfiles/ub-article.txt", "vocabulary.tokens.b2", "ub-article.txt.enc.b2");
-
-  encode("../.testfiles/24-IN.txt", "vocabulary.tokens.b", "24-IN.enc");
-  decode("test.dat.enc", "vocabulary.tokens", "test.dat.dec");
-  decode("war-and-peace.txt.enc.b", "vocabulary.tokens.b", "war-and-peace.txt.dec.b");
-  decode("ub-article.txt.enc.b2", "vocabulary.tokens.b2", "ub-article.txt.dec.b2");
-
-  std::vector<std::chrono::duration<double>> times;
-
-  for (int i = 0; i < 50; i++) {
-    auto start = std::chrono::high_resolution_clock::now();
-
-    encode("../.testfiles/war-and-peace.txt", "vocabulary.tokens.b2", "war-and-peace.txt.enc.b2");
-    
-    // decode("war-and-peace.txt.enc.b", "vocabulary.tokens.b", "war-and-peace.txt.dec.b");
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end - start;
-    times.push_back(elapsed);
-    std::cout << "Time taken: " << elapsed.count() << " seconds" << std::endl;
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <command> [args...]" << std::endl;
+    std::cerr << "Commands:" << std::endl;
+    std::cerr << "  vocab <corpus_file>                 - Generate vocabulary from corpus" << std::endl;
+    std::cerr << "  encode <input> <vocab> <output>     - Encode text using vocabulary" << std::endl;
+    std::cerr << "  decode <input> <vocab> <output>     - Decode tokens to text" << std::endl;
+    return 1;
   }
 
-  double averageTestTime = 0;
+  std::string command = argv[1];
 
-  for (int i = 0; i < 50; i++) {
-    averageTestTime += times[i].count();
+  if (command == "vocab") {
+    if (argc != 3) {
+      std::cerr << "Usage: " << argv[0] << " vocab <corpus_file>" << std::endl;
+      return 1;
+    }
+    return generate_vocabulary(argv[2]);
+  } 
+  else if (command == "encode") {
+    if (argc != 5) {
+      std::cerr << "Usage: " << argv[0] << " encode <input> <vocab> <output>" << std::endl;
+      return 1;
+    }
+    return encode(argv[2], argv[3], argv[4]);
+  } 
+  else if (command == "decode") {
+    if (argc != 5) {
+      std::cerr << "Usage: " << argv[0] << " decode <input> <vocab> <output>" << std::endl;
+      return 1;
+    }
+    return decode(argv[2], argv[3], argv[4]);
+  } 
+  else {
+    std::cerr << "Unknown command: " << command << std::endl;
+    return 1;
   }
-
-  averageTestTime /= 50;
-
-  std::cout << "Average Loop Time: " << averageTestTime << " seconds" << std::endl;
 
   return 0;
 }
